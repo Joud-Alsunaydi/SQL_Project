@@ -1,0 +1,49 @@
+/* Q1: Create a query that lists each movie, the film category it is classified in, and the number of times it has been rented out. */
+
+SELECT f.title film_Title, c.name category_Name, COUNT(*) rental_count
+FROM category c JOIN film_category fc 
+      ON c.category_id=fc.category_id
+      JOIN film f ON fc.film_id=f.film_id
+      JOIN Inventory i ON f.film_id=i.film_id
+      JOIN rental r ON r.inventory_id=i.inventory_id 
+GROUP BY 1,2
+ORDER BY 3 DESC 
+
+/* Q2: Write a query that outputs film titles, their category name and replacement cost, but only if replacement cost is below average, and limit the result to only half the database. */
+
+WITH t1 AS (select *
+      from category c join film_category fc
+      on c.category_id=fc.category_id
+      join film f on fc.film_id=f.film_id)
+
+SELECT title film_title, name category_name, replacement_cost
+FROM t1
+WHERE replacement_cost <= (SELECT AVG(replacement_cost)
+                          FROM film)
+LIMIT 15
+
+/* Q3: We noticed that you can rent out the same movie at different prices. Write a query that outputs film title, its category name and the average amount paid for renting it out. */
+
+SELECT f.title, c.name category_name, AVG(p.amount) Avg_Amount
+FROM category c JOIN film_category fc 
+      ON c.category_id=fc.category_id
+      JOIN film f ON fc.film_id=f.film_id
+      JOIN Inventory i ON f.film_id=i.film_id
+      JOIN rental r ON r.inventory_id=i.inventory_id
+      JOIN payment p ON r.rental_id=p.rental_id
+GROUP BY 1,2
+LIMIT 29
+/* Q4: Provide a table with the family-friendly film category, each of the quartiles, and the corresponding count of movies within each combination of film category for each corresponding rental duration category
+
+SELECT name, standard_quartile, COUNT(*)
+FROM (select *,
+      ntile(4) OVER(ORDER BY f.rental_duration) standard_quartile
+      from category c join film_category fc
+      on c.category_id=fc.category_id      
+      join film f on fc.film_id=f.film_id) AS t
+ WHERE name IN ('Animation', 'Children', 'Classics', 'Comedy', 'Family', 'Music')    
+ GROUP BY 1,2
+ 
+
+ 
+ 
